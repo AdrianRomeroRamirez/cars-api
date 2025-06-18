@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Http\Requests\CreateCarRequest;
 use App\Http\Requests\IndexRequest;
 use App\Http\Resources\CarResource;
 use App\Models\Car;
@@ -17,5 +18,21 @@ class CarService
             ->get();
 
         return CarResource::collection($cars)->resolve();
+    }
+
+    public function store(CreateCarRequest $request): bool
+    {
+        $car = Car::create([
+            'model' => $request->getModel(),
+            'year' => $request->getYear(),
+            'engine_type' => $request->getEngineType(),
+            'description' => $request->getDescription(),
+            'manufacturer_id' => $request->getManufacturerId(),
+        ]);
+
+        $car->colors()->sync($request->getColors());
+        $car->features()->sync($request->getFeatures());
+
+        return true;
     }
 }
