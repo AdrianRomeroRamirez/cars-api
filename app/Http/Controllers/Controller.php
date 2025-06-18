@@ -38,7 +38,7 @@ abstract class Controller
             return response()->json([
                 'success' => false,
                 'data' => null,
-                'error_message' => config('app.debug') ? $e->getMessage() : 'Server Error',
+                'error_message' => $e->getMessage(),
             ], 500);
         }
     }
