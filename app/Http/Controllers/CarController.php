@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Car;
+use App\Http\Requests\IndexRequest;
+use App\Services\CarService;
 use Illuminate\Http\JsonResponse;
 
 class CarController extends Controller
 {
-    public function index(): JsonResponse
+    public function __construct(private CarService $service) {}
+    
+    public function index(IndexRequest $request): JsonResponse
     {
-        $cars = Car::with(['manufacturer', 'colors', 'features'])->get();
-
-        return response()->json($cars);
+        return $this->callService(fn() => $this->service->index($request));
     }
 }
