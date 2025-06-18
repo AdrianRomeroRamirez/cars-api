@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateCarRequest;
 use App\Http\Requests\IndexRequest;
 use App\Services\CarService;
 use Illuminate\Http\JsonResponse;
@@ -14,4 +15,9 @@ class CarController extends Controller
     {
         return $this->callService(fn() => $this->service->index($request));
     }
+
+    public function store(CreateCarRequest $request)
+{
+    return $this->callService(fn() => $this->service->store($request), 201);
+}
 }
