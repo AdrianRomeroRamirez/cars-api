@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Car;
 use App\Models\Color;
+use App\Models\Feature;
+use App\Models\Manufacturer;
 
 class CarSeeder extends Seeder
 {
@@ -13,6 +15,16 @@ class CarSeeder extends Seeder
      */
     public function run(): void
     {
+        $manufacturers = [
+            ['name' => 'Tesla', 'country' => 'USA'],
+            ['name' => 'Toyota', 'country' => 'Japan'],
+            ['name' => 'Ford', 'country' => 'USA'],
+        ];
+
+        foreach ($manufacturers as $data) {
+            Manufacturer::firstOrCreate($data);
+        }
+
         $colors = [
             ['name' => 'Red', 'code' => '3R3'],
             ['name' => 'Black', 'code' => '202'],
@@ -21,61 +33,73 @@ class CarSeeder extends Seeder
             ['name' => 'Blue', 'code' => '8X2'],
         ];
 
-        $colorIds = collect($colors)->map(function ($item) {
-            return Color::firstOrCreate(
-                ['name' => $item['name']],
-                ['code' => $item['code']]
-            )->id;
-        });
+        foreach ($colors as $data) {
+            Color::firstOrCreate(['name' => $data['name']], ['code' => $data['code']]);
+        }
+
+        $features = [
+            'Autopilot', 'Navigation', 'Sunroof', 'Hybrid', 'Sport Package'
+        ];
+
+        foreach ($features as $name) {
+            Feature::firstOrCreate(['name' => $name]);
+        }
 
         $cars = [
             [
-                'brand' => 'Toyota',
-                'model' => 'Corolla',
-                'year' => 2020,
-                'engine_type' => 'gasoline',
-                'description' => 'Reliable compact sedan',
-                'colors' => ['White', 'Black']
-            ],
-            [
-                'brand' => 'Tesla',
-                'model' => 'Model 3',
-                'year' => 2023,
+                'manufacturer' => 'Tesla',
+                'model' => 'Model S',
+                'year' => 2022,
                 'engine_type' => 'electric',
-                'description' => 'High-performance electric sedan',
-                'colors' => ['Red', 'White']
+                'description' => 'Luxury electric sedan',
+                'colors' => ['Red', 'Black'],
+                'features' => ['Autopilot', 'Navigation']
             ],
             [
-                'brand' => 'Ford',
+                'manufacturer' => 'Toyota',
+                'model' => 'Prius',
+                'year' => 2021,
+                'engine_type' => 'hybrid',
+                'description' => 'Efficient hybrid car',
+                'colors' => ['White', 'Gray'],
+                'features' => ['Hybrid', 'Navigation']
+            ],
+            [
+                'manufacturer' => 'Ford',
                 'model' => 'Mustang',
                 'year' => 2019,
                 'engine_type' => 'gasoline',
-                'description' => 'Classic muscle car',
-                'colors' => ['Red', 'Gray']
+                'description' => 'Classic American muscle',
+                'colors' => ['Red', 'Blue'],
+                'features' => ['Sport Package']
             ],
             [
-                'brand' => 'Hyundai',
-                'model' => 'Ioniq 5',
-                'year' => 2022,
+                'manufacturer' => 'Tesla',
+                'model' => 'Model Y',
+                'year' => 2023,
                 'engine_type' => 'electric',
-                'description' => 'Electric SUV with retro-futuristic design',
-                'colors' => ['Blue', 'Gray']
-            ]
+                'description' => 'Compact electric SUV',
+                'colors' => ['White', 'Black'],
+                'features' => ['Autopilot', 'Sunroof']
+            ],
         ];
 
         foreach ($cars as $data) {
+            $manufacturer = Manufacturer::where('name', $data['manufacturer'])->first();
+
             $car = Car::create([
-                'brand' => $data['brand'],
+                'manufacturer_id' => $manufacturer->id,
                 'model' => $data['model'],
                 'year' => $data['year'],
                 'engine_type' => $data['engine_type'],
                 'description' => $data['description'],
             ]);
 
-            $ids = collect($data['colors'])
-                ->map(fn($name) => Color::where('name', $name)->first()->id);
+            $colorIds = Color::whereIn('name', $data['colors'])->pluck('id');
+            $featureIds = Feature::whereIn('name', $data['features'])->pluck('id');
 
-            $car->colors()->sync($ids);
+            $car->colors()->sync($colorIds);
+            $car->features()->sync($featureIds);
         }
     }
 }
